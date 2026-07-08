@@ -1,8 +1,8 @@
-import { Send } from "lucide-react";
+import { Send, Timer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { submitAnswer, touchParticipant, useAnswers, useSession } from "../hooks/useSession";
+import { useCountdown } from "../hooks/useCountdown";
+import { submitAnswer, touchParticipant, useAnswers, useAnswerStats, useSession } from "../hooks/useSession";
 import { LiveBarChart } from "./LiveBarChart";
-import { useAnswerStats } from "../hooks/useSession";
 
 type Props = {
   sessionId: string;
@@ -17,6 +17,8 @@ export function StudentQuestion({ sessionId, participantId, name }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const currentQuestion = session?.questions[session.currentQuestionIndex];
+  const remainingSeconds = useCountdown(session?.questionEndsAt);
+  const timeExpired = remainingSeconds === 0;
   const ownAnswer = useMemo(
     () => answers.find((answer) => answer.participantId === participantId),
     [answers, participantId]
@@ -38,7 +40,7 @@ export function StudentQuestion({ sessionId, participantId, name }: Props) {
   }, [participantId, sessionId]);
 
   async function handleSubmit() {
-    if (!session || !currentQuestion || !selected || ownAnswer) return;
+    if (!session || !currentQuestion || !selected || ownAnswer || timeExpired) return;
 
     try {
       setSubmitting(true);
@@ -67,6 +69,12 @@ export function StudentQuestion({ sessionId, participantId, name }: Props) {
       <p className="eyebrow">
         {name} · Pregunta {session.currentQuestionIndex + 1} de {session.questions.length}
       </p>
+      {remainingSeconds !== null && (
+        <div className={timeExpired ? "countdown student expired" : "countdown student"}>
+          <Timer size={20} />
+          <span>{timeExpired ? "Tiempo terminado" : `${remainingSeconds}s`}</span>
+        </div>
+      )}
       <h1>{currentQuestion.text}</h1>
 
       <div className="answer-grid">
@@ -80,7 +88,7 @@ export function StudentQuestion({ sessionId, participantId, name }: Props) {
               className={correct ? "answer-option correct" : checked ? "answer-option selected" : "answer-option"}
               key={option.key}
               onClick={() => setSelected(option.key)}
-              disabled={Boolean(ownAnswer)}
+              disabled={Boolean(ownAnswer) || timeExpired}
             >
               <strong>{option.key}</strong>
               <span>{option.text}</span>
@@ -91,6 +99,8 @@ export function StudentQuestion({ sessionId, participantId, name }: Props) {
 
       {ownAnswer ? (
         <div className="success">Respuesta enviada. Esperá la siguiente indicación del docente.</div>
+      ) : timeExpired ? (
+        <div className="error">Se terminó el tiempo para responder.</div>
       ) : (
         <button className="button primary full" type="button" onClick={() => void handleSubmit()} disabled={!selected || submitting}>
           <Send size={18} />

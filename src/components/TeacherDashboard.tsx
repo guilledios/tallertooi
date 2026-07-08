@@ -1,4 +1,6 @@
-import { Users } from "lucide-react";
+import { CheckCircle2, Timer, Users } from "lucide-react";
+import { useMemo } from "react";
+import { useCountdown } from "../hooks/useCountdown";
 import { useAnswers, useAnswerStats, useParticipants, useSession } from "../hooks/useSession";
 import { joinUrl } from "../utils/routes";
 import { LiveBarChart } from "./LiveBarChart";
@@ -16,6 +18,18 @@ export function TeacherDashboard({ sessionId }: Props) {
   const stats = useAnswerStats(answers, session?.questions ?? [], session?.currentQuestionIndex ?? -1);
   const currentQuestion = session?.questions[session.currentQuestionIndex];
   const url = joinUrl(sessionId);
+  const remainingSeconds = useCountdown(session?.questionEndsAt);
+  const correctResponders = useMemo(() => {
+    const participantsById = new Map(participants.map((participant) => [participant.id, participant.name]));
+
+    return answers
+      .filter((answer) => answer.isCorrect)
+      .map((answer) => ({
+        id: answer.id,
+        name: participantsById.get(answer.participantId) ?? "Sin nombre"
+      }))
+      .sort((first, second) => first.name.localeCompare(second.name));
+  }, [answers, participants]);
 
   if (loading) return <div className="panel">Cargando sesión...</div>;
   if (error || !session) return <div className="panel error">{error ?? "Sesión no disponible."}</div>;
@@ -69,9 +83,34 @@ export function TeacherDashboard({ sessionId }: Props) {
               revealCorrect={session.showCorrectAnswer}
               hidden={!session.showResults}
             />
+            <section className="correct-panel">
+              <div className="correct-heading">
+                <CheckCircle2 size={18} />
+                <h2>Respondieron correctamente</h2>
+                <span>{correctResponders.length}</span>
+              </div>
+              {correctResponders.length > 0 ? (
+                <div className="name-list">
+                  {correctResponders.map((responder) => (
+                    <span className="name-chip" key={responder.id}>
+                      {responder.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="muted compact">Todavía no hay respuestas correctas.</p>
+              )}
+            </section>
           </>
         ) : (
           <div className="empty-state">Compartí el código y presioná Iniciar cuando quieras mostrar la primera pregunta.</div>
+        )}
+
+        {currentQuestion && remainingSeconds !== null && (
+          <div className={remainingSeconds === 0 ? "countdown expired" : "countdown"}>
+            <Timer size={20} />
+            <span>{remainingSeconds === 0 ? "Tiempo terminado" : `${remainingSeconds}s`}</span>
+          </div>
         )}
 
         <SessionControls session={session} answers={answers} />

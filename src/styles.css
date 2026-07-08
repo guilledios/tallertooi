@@ -484,6 +484,116 @@ h2 {
   padding-top: 18px;
 }
 
+.control-stack {
+  border-top: 1px solid #e2e8f0;
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+  padding-top: 18px;
+}
+
+.control-stack .toolbar {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.timer-setting {
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid #dbe5f4;
+  border-radius: 8px;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.timer-setting span,
+.countdown,
+.correct-heading {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.timer-setting input {
+  max-width: 110px;
+  min-height: 40px;
+}
+
+.countdown {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  color: #1d4ed8;
+  font-size: 1.2rem;
+  font-weight: 900;
+  justify-content: center;
+  margin-top: 18px;
+  padding: 12px 14px;
+}
+
+.countdown.student {
+  justify-content: flex-start;
+  margin: 0 0 18px;
+  width: fit-content;
+}
+
+.countdown.expired {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+.correct-panel {
+  background: #fbfdff;
+  border: 1px solid #dbe5f4;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 16px;
+}
+
+.correct-heading {
+  color: #166534;
+}
+
+.correct-heading h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.correct-heading span {
+  background: #dcfce7;
+  border-radius: 999px;
+  color: #166534;
+  font-size: 0.85rem;
+  font-weight: 900;
+  margin-left: auto;
+  padding: 4px 9px;
+}
+
+.name-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.name-chip {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 999px;
+  color: #057a4f;
+  font-weight: 800;
+  padding: 7px 10px;
+}
+
+.compact {
+  margin-bottom: 0;
+}
+
 .empty-state {
   background: #f8fbff;
   border: 1px dashed #b8c8df;
@@ -564,6 +674,17 @@ input:focus {
   }
 
   .toolbar .button {
+    width: 100%;
+  }
+
+  .timer-setting {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .timer-setting input,
+  .countdown.student {
+    max-width: none;
     width: 100%;
   }
 }

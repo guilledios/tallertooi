@@ -20,6 +20,8 @@ export type QuizSession = {
   createdAt: Timestamp | null;
   currentQuestionIndex: number;
   currentQuestionKey: string;
+  questionDurationSeconds: number;
+  questionEndsAt: Timestamp | null;
   showResults: boolean;
   showCorrectAnswer: boolean;
   status: SessionStatus;

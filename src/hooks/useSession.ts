@@ -6,6 +6,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  Timestamp,
   updateDoc,
   where,
   writeBatch
@@ -116,6 +117,8 @@ export async function createSession(ownerId: string, questions: Question[]) {
         createdAt: serverTimestamp(),
         currentQuestionIndex: -1,
         currentQuestionKey: "-1",
+        questionDurationSeconds: 30,
+        questionEndsAt: null,
         showResults: false,
         showCorrectAnswer: false,
         status: "draft",
@@ -155,6 +158,10 @@ export async function submitAnswer(
   questionIndex: number,
   selectedOption: string
 ) {
+  if (session.questionEndsAt && Date.now() > session.questionEndsAt.toMillis()) {
+    throw new Error("El tiempo para responder terminó.");
+  }
+
   const currentQuestion = session.questions[questionIndex];
   await setDoc(doc(db, "sessions", session.id, "answers", `${questionIndex}_${participantId}`), {
     participantId,
@@ -170,6 +177,19 @@ export async function updateSession(sessionId: string, patch: Partial<QuizSessio
   await updateDoc(doc(db, "sessions", sessionId), patch);
 }
 
+export async function moveToQuestion(session: QuizSession, questionIndex: number, durationSeconds: number) {
+  const safeDuration = Math.min(Math.max(Math.round(durationSeconds), 5), 600);
+
+  await updateDoc(doc(db, "sessions", session.id), {
+    currentQuestionIndex: questionIndex,
+    currentQuestionKey: String(questionIndex),
+    questionDurationSeconds: safeDuration,
+    questionEndsAt: Timestamp.fromMillis(Date.now() + safeDuration * 1000),
+    showCorrectAnswer: false,
+    status: "live"
+  });
+}
+
 export async function deleteCurrentAnswers(sessionId: string, answers: Answer[]) {
   const batch = writeBatch(db);
   answers.forEach((answer) => {
@@ -181,6 +201,7 @@ export async function deleteCurrentAnswers(sessionId: string, answers: Answer[])
 export async function closeSession(sessionId: string) {
   await updateDoc(doc(db, "sessions", sessionId), {
     status: "closed",
+    questionEndsAt: null,
     showResults: false,
     showCorrectAnswer: false
   });
