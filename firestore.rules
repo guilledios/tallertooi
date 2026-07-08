@@ -1,0 +1,77 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function sessionRef(sessionId) {
+      return /databases/$(database)/documents/sessions/$(sessionId);
+    }
+
+    function sessionExists(sessionId) {
+      return exists(sessionRef(sessionId));
+    }
+
+    function sessionData(sessionId) {
+      return get(sessionRef(sessionId)).data;
+    }
+
+    function isSessionOwner(sessionId) {
+      return signedIn() && sessionExists(sessionId) && sessionData(sessionId).ownerId == request.auth.uid;
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.currentQuestionIndex == -1
+        && request.resource.data.currentQuestionKey == '-1'
+        && request.resource.data.showResults == false
+        && request.resource.data.showCorrectAnswer == false
+        && request.resource.data.status in ['draft', 'live'];
+
+      allow update, delete: if isSessionOwner(sessionId);
+
+      match /participants/{participantId} {
+        allow read: if signedIn();
+
+        allow create, update: if signedIn()
+          && participantId == request.auth.uid
+          && request.resource.data.keys().hasOnly(['name', 'joinedAt', 'lastSeen'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 80;
+
+        allow delete: if isSessionOwner(sessionId) || (signedIn() && participantId == request.auth.uid);
+      }
+
+      match /answers/{answerId} {
+        allow read: if signedIn();
+
+        allow create: if signedIn()
+          && sessionExists(sessionId)
+          && sessionData(sessionId).status != 'closed'
+          && answerId == request.resource.data.questionKey + '_' + request.auth.uid
+          && request.resource.data.participantId == request.auth.uid
+          && request.resource.data.questionIndex == sessionData(sessionId).currentQuestionIndex
+          && request.resource.data.questionKey == sessionData(sessionId).currentQuestionKey
+          && request.resource.data.selectedOption is string
+          && request.resource.data.selectedOption.size() == 1
+          && request.resource.data.keys().hasOnly([
+            'participantId',
+            'questionIndex',
+            'questionKey',
+            'selectedOption',
+            'submittedAt',
+            'isCorrect'
+          ]);
+
+        allow update: if false;
+        allow delete: if isSessionOwner(sessionId);
+      }
+    }
+  }
+}
