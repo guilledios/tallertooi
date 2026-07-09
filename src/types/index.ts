@@ -12,6 +12,15 @@ export type Question = {
   answer: string;
 };
 
+export type QuestionSet = {
+  id: string;
+  ownerId: string;
+  title: string;
+  createdAt: Timestamp | null;
+  updatedAt: Timestamp | null;
+  questions: Question[];
+};
+
 export type SessionStatus = "draft" | "live" | "closed";
 
 export type QuizSession = {

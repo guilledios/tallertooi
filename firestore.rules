@@ -27,6 +27,22 @@ service cloud.firestore {
       return teacherUser() && sessionExists(sessionId) && sessionData(sessionId).ownerId == request.auth.uid;
     }
 
+    match /questionSets/{questionSetId} {
+      allow read, delete: if teacherUser()
+        && resource.data.ownerId == request.auth.uid;
+
+      allow create: if teacherUser()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 120
+        && request.resource.data.questions is list
+        && request.resource.data.questions.size() > 0
+        && request.resource.data.questions.size() <= 500;
+
+      allow update: if false;
+    }
+
     match /sessions/{sessionId} {
       allow read: if signedIn();
 

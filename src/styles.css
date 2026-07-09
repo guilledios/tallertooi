@@ -107,6 +107,10 @@ a {
   grid-column: span 1;
 }
 
+.library-panel {
+  grid-column: 1 / -1;
+}
+
 .panel {
   background: rgba(15, 23, 42, 0.82);
   border: 1px solid rgba(148, 163, 184, 0.2);
@@ -244,6 +248,25 @@ h2 {
 
 .button.full {
   width: 100%;
+}
+
+.icon-button {
+  aspect-ratio: 1;
+  min-width: 44px;
+  padding: 10px;
+}
+
+.action-row,
+.set-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.session-start-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .upload-panel > .button.secondary {
@@ -699,6 +722,40 @@ h2 {
   padding: 20px;
 }
 
+.set-list {
+  display: grid;
+  gap: 10px;
+}
+
+.set-card {
+  align-items: center;
+  background: rgba(2, 6, 23, 0.34);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 14px;
+}
+
+.set-title {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.set-title svg {
+  color: #67e8f9;
+  flex: 0 0 auto;
+}
+
+.set-title h3 {
+  color: #f8fafc;
+  font-size: 1rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 label {
   color: #d6e0ec;
   display: grid;
@@ -777,6 +834,15 @@ input:focus {
 
   .toolbar .button {
     width: 100%;
+  }
+
+  .action-row .button,
+  .set-actions .button {
+    width: 100%;
+  }
+
+  .set-card {
+    grid-template-columns: 1fr;
   }
 
   .ranking-row,
