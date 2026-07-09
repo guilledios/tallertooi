@@ -20,6 +20,7 @@ export function TeacherDashboard({ sessionId }: Props) {
   const currentQuestion = session?.questions[session.currentQuestionIndex];
   const url = joinUrl(sessionId);
   const remainingSeconds = useCountdown(session?.questionEndsAt);
+  const displayMode = session?.displayMode ?? "full";
   const correctResponders = useMemo(() => {
     const participantsById = new Map(participants.map((participant) => [participant.id, participant.name]));
 
@@ -101,7 +102,10 @@ export function TeacherDashboard({ sessionId }: Props) {
             </p>
             <h1>{currentQuestion?.text ?? "Listo para iniciar"}</h1>
           </div>
-          <span className={`status-pill ${session.status}`}>{session.status}</span>
+          <div className="status-stack">
+            <span className={`status-pill ${session.status}`}>{session.status}</span>
+            <span className="mode-pill">{displayMode === "keypad" ? "Modo proyector" : "Modo completo"}</span>
+          </div>
         </div>
 
         {currentQuestion ? (

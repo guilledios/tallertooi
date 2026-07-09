@@ -19,6 +19,8 @@ export function StudentQuestion({ sessionId, participantId, name }: Props) {
   const currentQuestion = session?.questions[session.currentQuestionIndex];
   const remainingSeconds = useCountdown(session?.questionEndsAt);
   const timeExpired = remainingSeconds === 0;
+  const displayMode = session?.displayMode ?? "full";
+  const keypadMode = displayMode === "keypad";
   const ownAnswer = useMemo(
     () => answers.find((answer) => answer.participantId === participantId),
     [answers, participantId]
@@ -75,12 +77,19 @@ export function StudentQuestion({ sessionId, participantId, name }: Props) {
           <span>{timeExpired ? "Tiempo terminado" : `${remainingSeconds}s`}</span>
         </div>
       )}
-      <h1>{currentQuestion.text}</h1>
+      {keypadMode ? (
+        <div className="keypad-instructions">
+          <h1>Elegí tu respuesta</h1>
+          <p className="muted">La pregunta y las alternativas están en la pantalla del docente.</p>
+        </div>
+      ) : (
+        <h1>{currentQuestion.text}</h1>
+      )}
 
-      <div className="answer-grid">
+      <div className={keypadMode ? "answer-grid keypad-grid" : "answer-grid"}>
         {currentQuestion.options.map((option) => {
           const checked = selected === option.key || ownAnswer?.selectedOption === option.key;
-          const correct = session.showCorrectAnswer && option.key === currentQuestion.answer;
+          const correct = !keypadMode && session.showCorrectAnswer && option.key === currentQuestion.answer;
 
           return (
             <button
@@ -91,7 +100,7 @@ export function StudentQuestion({ sessionId, participantId, name }: Props) {
               disabled={Boolean(ownAnswer) || timeExpired}
             >
               <strong>{option.key}</strong>
-              <span>{option.text}</span>
+              {!keypadMode && <span>{option.text}</span>}
             </button>
           );
         })}
@@ -108,7 +117,7 @@ export function StudentQuestion({ sessionId, participantId, name }: Props) {
         </button>
       )}
 
-      {session.showResults && (
+      {session.showResults && !keypadMode && (
         <section className="student-results">
           <h2>Resultados</h2>
           <LiveBarChart

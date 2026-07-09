@@ -22,6 +22,7 @@ export type QuestionSet = {
 };
 
 export type SessionStatus = "draft" | "live" | "closed";
+export type SessionDisplayMode = "full" | "keypad";
 
 export type QuizSession = {
   id: string;
@@ -33,6 +34,7 @@ export type QuizSession = {
   questionEndsAt: Timestamp | null;
   showResults: boolean;
   showCorrectAnswer: boolean;
+  displayMode: SessionDisplayMode;
   status: SessionStatus;
   questions: Question[];
 };

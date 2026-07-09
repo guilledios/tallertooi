@@ -5,7 +5,7 @@ import { QuestionSetLibrary } from "../components/QuestionSetLibrary";
 import { TeacherDashboard } from "../components/TeacherDashboard";
 import { deleteQuestionSet, saveQuestionSet, useQuestionSets } from "../hooks/useQuestionSets";
 import { createSession } from "../hooks/useSession";
-import type { Question } from "../types";
+import type { Question, SessionDisplayMode } from "../types";
 
 type Props = {
   userId: string;
@@ -15,6 +15,7 @@ type Props = {
 export function TeacherPage({ userId, initialSessionId }: Props) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedTitle, setSelectedTitle] = useState("");
+  const [displayMode, setDisplayMode] = useState<SessionDisplayMode>("full");
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -30,7 +31,7 @@ export function TeacherPage({ userId, initialSessionId }: Props) {
 
     try {
       setCreating(true);
-      const newSessionId = await createSession(userId, nextQuestions);
+      const newSessionId = await createSession(userId, nextQuestions, displayMode);
       setSessionId(newSessionId);
       window.location.hash = `#/teacher/${newSessionId}`;
     } catch (caught) {
@@ -105,6 +106,24 @@ export function TeacherPage({ userId, initialSessionId }: Props) {
             placeholder="Ej: Repaso final TOOI"
           />
         </label>
+        <div className="mode-picker" role="radiogroup" aria-label="Modalidad de sesión">
+          <button
+            className={displayMode === "full" ? "mode-card active" : "mode-card"}
+            type="button"
+            onClick={() => setDisplayMode("full")}
+          >
+            <strong>Completa</strong>
+            <span>El estudiante ve pregunta y alternativas en su dispositivo.</span>
+          </button>
+          <button
+            className={displayMode === "keypad" ? "mode-card active" : "mode-card"}
+            type="button"
+            onClick={() => setDisplayMode("keypad")}
+          >
+            <strong>Proyector</strong>
+            <span>El docente muestra la pregunta; estudiantes solo eligen A, B, C, D, E.</span>
+          </button>
+        </div>
         {error && <p className="error">{error}</p>}
         {questionSetsError && <p className="error">{questionSetsError}</p>}
         {success && <p className="success">{success}</p>}

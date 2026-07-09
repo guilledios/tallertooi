@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "../firebase/config";
-import type { Answer, Participant, Question, QuizSession } from "../types";
+import type { Answer, Participant, Question, QuizSession, SessionDisplayMode } from "../types";
 import { createSessionCode } from "../utils/sessionCode";
 
 export function useSession(sessionId?: string) {
@@ -122,7 +122,7 @@ export function useAnswerStats(answers: Answer[], questions: Question[], questio
   }, [answers, questionIndex, questions]);
 }
 
-export async function createSession(ownerId: string, questions: Question[]) {
+export async function createSession(ownerId: string, questions: Question[], displayMode: SessionDisplayMode = "full") {
   for (let attempts = 0; attempts < 5; attempts += 1) {
     const sessionId = createSessionCode();
     const reference = doc(db, "sessions", sessionId);
@@ -138,6 +138,7 @@ export async function createSession(ownerId: string, questions: Question[]) {
         questionEndsAt: null,
         showResults: false,
         showCorrectAnswer: false,
+        displayMode,
         status: "draft",
         questions
       });
