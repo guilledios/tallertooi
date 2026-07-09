@@ -81,6 +81,21 @@ a {
   color: #67e8f9;
 }
 
+.nav-button {
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(251, 113, 133, 0.28);
+  border-radius: 6px;
+  color: #fecaca;
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 36px;
+  padding: 8px 12px;
+}
+
+.nav-button:hover {
+  background: rgba(244, 63, 94, 0.18);
+}
+
 .teacher-start,
 .dashboard-grid {
   display: grid;
@@ -114,6 +129,10 @@ a {
 .join-card {
   margin: 44px auto;
   max-width: 460px;
+}
+
+.login-card {
+  border-top: 4px solid #22d3ee;
 }
 
 .eyebrow {

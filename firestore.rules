@@ -6,6 +6,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function teacherUser() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider == 'password';
+    }
+
     function sessionRef(sessionId) {
       return /databases/$(database)/documents/sessions/$(sessionId);
     }
@@ -19,13 +24,13 @@ service cloud.firestore {
     }
 
     function isSessionOwner(sessionId) {
-      return signedIn() && sessionExists(sessionId) && sessionData(sessionId).ownerId == request.auth.uid;
+      return teacherUser() && sessionExists(sessionId) && sessionData(sessionId).ownerId == request.auth.uid;
     }
 
     match /sessions/{sessionId} {
       allow read: if signedIn();
 
-      allow create: if signedIn()
+      allow create: if teacherUser()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.currentQuestionIndex == -1
         && request.resource.data.currentQuestionKey == '-1'

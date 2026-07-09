@@ -1,7 +1,8 @@
 import { GraduationCap } from "lucide-react";
 import { TeacherPage } from "./pages/TeacherPage";
 import { StudentPage } from "./pages/StudentPage";
-import { useAnonymousAuth } from "./hooks/useAnonymousAuth";
+import { TeacherLogin } from "./components/TeacherLogin";
+import { useAuth } from "./hooks/useAuth";
 import { normalizeSessionCode } from "./utils/sessionCode";
 import { useEffect, useState } from "react";
 
@@ -25,14 +26,24 @@ function readRoute(): Route {
 }
 
 export function App() {
-  const { user, loading, error } = useAnonymousAuth();
+  const { user, loading, error, isTeacher, signInTeacher, ensureAnonymousStudent, logOut } = useAuth();
   const [route, setRoute] = useState<Route>(readRoute);
+  const [studentAuthLoading, setStudentAuthLoading] = useState(false);
 
   useEffect(() => {
     const onHashChange = () => setRoute(readRoute());
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
+
+  useEffect(() => {
+    if (loading || route.kind !== "join" || user) {
+      return;
+    }
+
+    setStudentAuthLoading(true);
+    void ensureAnonymousStudent().finally(() => setStudentAuthLoading(false));
+  }, [ensureAnonymousStudent, loading, route.kind, user]);
 
   return (
     <div className="app-shell">
@@ -44,14 +55,21 @@ export function App() {
         <nav>
           <a href="#/teacher">Docente</a>
           <a href="#/join">Estudiante</a>
+          {isTeacher && (
+            <button className="nav-button" type="button" onClick={() => void logOut()}>
+              Salir
+            </button>
+          )}
         </nav>
       </header>
 
-      {loading && <div className="panel">Iniciando acceso anónimo...</div>}
+      {loading && <div className="panel">Cargando acceso...</div>}
       {error && <div className="panel error">{error}</div>}
-      {!loading && user && route.kind === "teacher" && (
+      {!loading && route.kind === "teacher" && !isTeacher && <TeacherLogin error={error} onLogin={signInTeacher} />}
+      {!loading && isTeacher && user && route.kind === "teacher" && (
         <TeacherPage userId={user.uid} initialSessionId={route.sessionId} key={route.sessionId ?? "new"} />
       )}
+      {!loading && studentAuthLoading && route.kind === "join" && <div className="panel">Preparando ingreso...</div>}
       {!loading && user && route.kind === "join" && <StudentPage userId={user.uid} initialSessionId={route.sessionId} />}
     </div>
   );
