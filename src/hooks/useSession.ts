@@ -91,6 +91,23 @@ export function useAnswers(sessionId?: string, questionIndex?: number) {
   return answers;
 }
 
+export function useAllAnswers(sessionId?: string) {
+  const [answers, setAnswers] = useState<Answer[]>([]);
+
+  useEffect(() => {
+    if (!sessionId) {
+      setAnswers([]);
+      return;
+    }
+
+    return onSnapshot(collection(db, "sessions", sessionId, "answers"), (snapshot) => {
+      setAnswers(snapshot.docs.map((item) => ({ id: item.id, ...item.data() }) as Answer));
+    });
+  }, [sessionId]);
+
+  return answers;
+}
+
 export function useAnswerStats(answers: Answer[], questions: Question[], questionIndex: number) {
   return useMemo(() => {
     const currentQuestion = questions[questionIndex];
